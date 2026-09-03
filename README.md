@@ -4,6 +4,9 @@
 **▶ [Live demo](https://m2-md.github.io/canvas-side-scroller-from-scratch/)** · [Source](https://github.com/m2-md/canvas-side-scroller-from-scratch)
 <!-- LINKS:END -->
 
+> A 2D side-scroller engine on HTML5 Canvas: a smooth lerping camera, multi-layer
+> parallax, coyote time, jump buffering, moving platforms, and buoyancy physics.
+
 Working code for the article "The Camera Is a Lie: A Side-Scroller from Scratch in
 Canvas and the Polite Lies We Tell the Player". An olive falls off a branch, rolls
 across a warm pastel breakfast table and reaches where it belongs — a bowl of olive
@@ -103,6 +106,13 @@ tests/
   the engine headless (falling off the branch, being carried by the tray, jumping,
   settling on the surface, falling into the gap). The lesson: if your win condition
   is untested, your game may be unwinnable.
+
+## Tech stack
+
+- TypeScript
+- Vite
+- Vitest
+- HTML5 Canvas 2D
 
 ## License
 
