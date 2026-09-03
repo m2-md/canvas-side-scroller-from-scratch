@@ -1,5 +1,9 @@
 # THE LOST OLIVE — A Side-Scroller from Scratch in Canvas
 
+<!-- LINKS:BEGIN — üretildi: scripts/sync-repo-links.py · elle düzenleme -->
+**▶ [Live demo](https://m2-md.github.io/canvas-side-scroller-from-scratch/)** · [Source](https://github.com/m2-md/canvas-side-scroller-from-scratch)
+<!-- LINKS:END -->
+
 Working code for the article "The Camera Is a Lie: A Side-Scroller from Scratch in
 Canvas and the Polite Lies We Tell the Player". An olive falls off a branch, rolls
 across a warm pastel breakfast table and reaches where it belongs — a bowl of olive
