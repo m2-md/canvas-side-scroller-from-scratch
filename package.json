@@ -1,7 +1,7 @@
 {
   "name": "canvas-side-scroller-from-scratch",
   "version": "1.0.0",
-  "description": "KAYIP ZEYTİN — Canvas'ta sıfırdan side-scroller: elle kurulmuş kamera + parallax, daire-dikdörtgen çözümleme, coyote/buffer/değişken zıplama, hareketli platform taşıma, buoyancy",
+  "description": "2D side-scroller engine on HTML5 Canvas: smooth lerping camera, multi-layer parallax, coyote time, jump buffering, moving platforms, and buoyancy physics.",
   "type": "module",
   "license": "MIT",
   "scripts": {

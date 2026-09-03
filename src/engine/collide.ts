@@ -1,5 +1,5 @@
-// Saf geometri: daire ile dikdörtgeni ayırmak. Hiçbir cismi kımıldatmaz;
-// sadece "değiyorlarsa nasıl ayrılır?" sorusuna cevap verir.
+// Pure geometry: separating circle from rectangle. Does not move any body;
+// only answers the question: "if they touch, how should they separate?"
 
 export interface Rect {
   x: number;
@@ -9,34 +9,33 @@ export interface Rect {
 }
 
 export interface Hit {
-  nx: number; // birim normal: daireyi dışarı iten yön
+  nx: number; // unit normal: direction pushing the circle out
   ny: number;
-  depth: number; // iç içe geçme (px)
+  depth: number; // penetration depth (px)
 }
 
-// Falling game'de bu fonksiyon sadece "değiyor mu?" diyordu.
-// Şimdi "nasıl ayrılır?" sorusuna da cevap veriyor: normal + derinlik.
+// Resolves contact: returns normal + penetration depth.
 export function resolveCircleRect(
   cx: number,
   cy: number,
   r: number,
   rect: Rect,
 ): Hit | null {
-  const nx = Math.max(rect.x, Math.min(cx, rect.x + rect.w)); // en yakın x
-  const ny = Math.max(rect.y, Math.min(cy, rect.y + rect.h)); // en yakın y
+  const nx = Math.max(rect.x, Math.min(cx, rect.x + rect.w)); // closest x
+  const ny = Math.max(rect.y, Math.min(cy, rect.y + rect.h)); // closest y
   const dx = cx - nx;
   const dy = cy - ny;
   const d2 = dx * dx + dy * dy;
 
-  if (d2 > r * r) return null; // temas yok
+  if (d2 > r * r) return null; // no contact
 
-  // Merkez dikdörtgenin dışında: en yakın nokta bize yönü verir
+  // Center is outside rectangle: closest point gives us direction
   if (d2 > 0) {
     const d = Math.sqrt(d2);
     return { nx: dx / d, ny: dy / d, depth: r - d };
   }
 
-  // Merkez dikdörtgenin İÇİNDE (d = 0): en kısa kaçış eksenini seç
+  // Center is INSIDE rectangle (d = 0): choose shortest escape axis
   const left = cx - rect.x;
   const right = rect.x + rect.w - cx;
   const top = cy - rect.y;
@@ -48,7 +47,7 @@ export function resolveCircleRect(
   return { nx: 1, ny: 0, depth: right + r };
 }
 
-// Daire bu dikdörtgenin üstünde mi duruyor? (taşıma testi)
+// Is circle resting on top of this rectangle? (carry test)
 export function restsOn(
   cx: number,
   cy: number,
@@ -56,6 +55,6 @@ export function restsOn(
   rect: Rect,
 ): boolean {
   const withinX = cx > rect.x && cx < rect.x + rect.w;
-  const onTop = Math.abs(cy + r - rect.y) < r * 0.6; // taban ~ platform üstü
+  const onTop = Math.abs(cy + r - rect.y) < r * 0.6; // base ~ platform top
   return withinX && onTop;
 }

@@ -1,59 +1,59 @@
-// KAYIP ZEYTİN — Saf Mantık: kamera, üç zıplama yalanı, yüzdürme.
-// Hepsi DOM'suz, canvas'sız — tarayıcı açmadan test edilir.
+// THE LOST OLIVE — Pure Logic: camera, jump tricks (coyote + buffer), buoyancy.
+// All pure functions without DOM or canvas — fully unit-testable.
 
-// --- Birinci Yalan: Kamera ---------------------------------------------------
+// --- First Trick: Camera ---------------------------------------------------
 
 export interface Camera {
   x: number;
 }
 
-// Kamerayı hedefe yumuşat: lerp + bakış yönüne bakış-önü (lookahead)
+// Smooth camera to target: lerp + lookahead in facing direction
 export function followCamera(
   camX: number,
-  targetX: number, // takip edilen dünya x'i (zeytin)
-  facing: number, // -1 sol, +1 sağ
+  targetX: number, // tracked world x (olive)
+  facing: number, // -1 left, +1 right
   viewW: number,
   dt: number,
 ): number {
-  const lookahead = facing * viewW * 0.18; // gidilen yöne biraz açıl
-  const desired = targetX - viewW * 0.5 + lookahead; // hedefi ortaya al
-  const t = 1 - Math.pow(0.001, dt); // dt'den bağımsız yumuşatma
+  const lookahead = facing * viewW * 0.18; // bias slightly toward facing direction
+  const desired = targetX - viewW * 0.5 + lookahead; // center target with lookahead
+  const t = 1 - Math.pow(0.001, dt); // dt-independent smoothing
   return camX + (desired - camX) * t;
 }
 
-// --- İkinci Yalan: Kibar Yalanlar (coyote + buffer + değişken zıplama) --------
+// --- Second Trick: Jump Mechanics (coyote + buffer + variable jump) --------
 
-export const COYOTE = 0.1; // sn — zeminden ayrıldıktan sonraki af
-export const BUFFER = 0.12; // sn — inmeden önce basılan zıplama hatırlanır
+export const COYOTE = 0.1; // s — grace period after leaving ground
+export const BUFFER = 0.12; // s — early jump input buffered before landing
 
 export interface JumpInput {
-  timeSinceGround: number; // en son ne zaman zemindeydik
-  timeSincePress: number; // en son ne zaman zıpla'ya bastık
+  timeSinceGround: number; // time since last grounded
+  timeSincePress: number; // time since jump was pressed
 }
 
-// Şu an zıplamalı mı? İki kibar yalan tek koşulda.
+// Should jump trigger right now? Evaluates both coyote time and input buffer.
 export function shouldJump(j: JumpInput): boolean {
   return j.timeSinceGround <= COYOTE && j.timeSincePress <= BUFFER;
 }
 
-// Tuş erken bırakıldı ve hâlâ yükseliyoruz: zıplamayı kıs
+// Key released early while still rising: cut jump short
 export function cutJump(vy: number): number {
   return vy < 0 ? vy * 0.45 : vy;
 }
 
-// --- Üçüncü Yalan: Yüzdürme ---------------------------------------------------
+// --- Third Trick: Buoyancy ---------------------------------------------------
 
-// Yüzdürme: derinlikle orantılı itiş + yüksek sönüm → yumuşak sallanma
+// Buoyancy: spring push proportional to depth + high damping -> gentle bobbing
 export function buoyancy(
-  cy: number, // zeytin merkezi y
-  vy: number, // dikey hız
-  surface: number, // yağ yüzeyi y
+  cy: number, // olive center y
+  vy: number, // vertical velocity
+  surface: number, // oil surface y
   dt: number,
 ): number {
   const depth = cy - surface;
-  if (depth <= 0) return vy; // yağın üstünde: dokunma
+  if (depth <= 0) return vy; // above oil: untouched
 
-  const k = 26; // yay sertliği: batış arttıkça yukarı itiş artar
-  const lifted = vy - depth * k * dt; // yerçekimine karşı yukarı kuvvet
-  return lifted * Math.pow(0.05, dt); // viskoz sönüm: bata çıka durulur
+  const k = 26; // spring stiffness: upward push increases with depth
+  const lifted = vy - depth * k * dt; // upward force against gravity
+  return lifted * Math.pow(0.05, dt); // viscous damping: settles naturally
 }

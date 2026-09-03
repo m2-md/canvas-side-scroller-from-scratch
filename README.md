@@ -1,101 +1,105 @@
-# KAYIP ZEYTİN — Canvas'ta Sıfırdan Side-Scroller
+# THE LOST OLIVE — A Side-Scroller from Scratch in Canvas
 
-"Kamera Bir Yalandır: Canvas'ta Sıfırdan Side-Scroller ve Oyuncuya Söylenen Kibar
-Yalanlar" makalesinin çalışan kodu. Bir zeytin daldan düşer, sıcak pastel bir
-kahvaltı sofrasında yuvarlanır ve ait olduğu yere — bir zeytinyağı kasesine —
-ulaşır. Yazının taşıyıcı fikri: **oyun geliştirme, oyuncunun lehine söylenen
-yalanlar sanatıdır.**
+Working code for the article "The Camera Is a Lie: A Side-Scroller from Scratch in
+Canvas and the Polite Lies We Tell the Player". An olive falls off a branch, rolls
+across a warm pastel breakfast table and reaches where it belongs — a bowl of olive
+oil. The article's carrying idea: **game development is the art of lies told in the
+player's favor.**
 
-Üç katman:
+Three layers:
 
-- **Raftan indirilen motor** (`src/engine/`): fizik yazısının `vec` + `body` +
-  `world`'ü olduğu gibi kopyalandı, sonra platformcuya göre genişletildi. Yeni
-  `collide.ts` daireyi dikdörtgenden ayırır (`resolveCircleRect`: normal +
-  derinlik); `world.step` platform taşıma + yerçekimi entegrasyonu + çarpışmayı
-  tek döngüde yürütür. Ekran duvarları ve cisim-cisim impulse ÇIKARILDI.
-- **Saf mantık** (`src/logic.ts`): kamera (`followCamera` — lerp + lookahead,
-  `dt`'den bağımsız), üç zıplama yalanı (`shouldJump` coyote+buffer, `cutJump`
-  değişken yükseklik) ve yüzdürme (`buoyancy`). Hepsi DOM'suz, canvas'sız.
-- **Oyun** (`src/main.ts`): elle kurulmuş kamera (`ctx.translate(-cam.x, 0)`),
-  parallax katmanları (`layer(0.2)` / `layer(0.5)` / `layer(1.0)`), kinematik çay
-  tepsisi, klavye **ve** dokunmatik girdi, durum makinesi (`playing`/`won`/`lost`)
-  ve `resetGame()` — kaybedince/kazanınca sayfa **yenilenmez**.
+- **The engine taken off the shelf** (`src/engine/`): the `vec` + `body` + `world`
+  from the physics article were copied as-is, then extended for a platformer. The
+  new `collide.ts` separates a circle from a rectangle (`resolveCircleRect`: normal
+  + depth); `world.step` runs platform carrying + gravity integration + collision in
+  a single loop. Screen walls and body-to-body impulse were REMOVED.
+- **Pure logic** (`src/logic.ts`): the camera (`followCamera` — lerp + lookahead,
+  independent of `dt`), the three jump lies (`shouldJump` coyote+buffer, `cutJump`
+  variable height) and buoyancy (`buoyancy`). All of it without DOM, without canvas.
+- **The game** (`src/main.ts`): a hand-built camera (`ctx.translate(-cam.x, 0)`),
+  parallax layers (`layer(0.2)` / `layer(0.5)` / `layer(1.0)`), a kinematic tea
+  tray, keyboard **and** touch input, a state machine (`playing`/`won`/`lost`) and
+  `resetGame()` — losing/winning does **not** reload the page.
 
-Sıfır asset, ses yok, network isteği yok. Üretim build'i: **JS 9.91 KB
-(gzip 4.15 KB)** (`npm run build` ile doğrula).
+Zero assets, no sound, no network requests. Production build: **JS 9.91 KB
+(gzip 4.15 KB)** (verify with `npm run build`).
 
-## Kurulum ve çalıştırma
+## Setup and running
 
 ```bash
 npm install
-npm run dev     # http://localhost:5173 (veya Vite'ın verdiği port)
+npm run dev     # http://localhost:5173 (or whatever port Vite gives you)
 ```
 
-**Nasıl oynanır:** `←` `→` ya da `A` `D` zeytini yuvarlar; `↑` / `W` / `Space`
-zıplatır. Zeytin kenardan yeni ayrılmışken hâlâ zıplayabilir (coyote), yere
-inmeden bir tık önce basılan zıplama yere değince tetiklenir (buffer), tuşu erken
-bırakınca alçak zıplar (değişken zıplama). Kinematik **çay tepsisi** üstündeki
-zeytini yanında taşır. Boşluğa düşerse nazik bir kayıp; yağ kasesine ulaşınca
-`won` — zeytin yağda bata çıka dengelenir. Kazanma/kaybetme ekranı bir dokunuş ya
-da `Enter` ile `resetGame()`'e döner, sayfa yenilenmez.
+**How to play:** `←` `→` or `A` `D` roll the olive; `↑` / `W` / `Space` make it
+jump. The olive can still jump just after it has left the edge (coyote), a jump
+pressed a tick before landing fires when it touches the ground (buffer), and
+releasing the key early gives a lower jump (variable jump). The kinematic **tea
+tray** carries the olive on top of it along with it. If it falls into the gap it is
+a gentle loss; when it reaches the oil bowl it is `won` — the olive bobs and settles
+in the oil. The win/lose screen returns to `resetGame()` with a touch or `Enter`,
+the page does not reload.
 
-**Mobil:** ekranın sol/sağ yarısını basılı tutmak yatay hareket, yukarı kaydırma
-zıplamadır (orijinal tutorial'da yoktu — bu sürümde tam oynanabilir).
+**Mobile:** holding the left/right half of the screen moves horizontally, swiping up
+jumps (this was not in the original tutorial — in this version it is fully playable).
 
-## Test
+## Tests
 
 ```bash
-npm test        # 18 birim testi
+npm test        # 18 unit tests
 ```
 
-Testler saf mantığı tarayıcısız doğrular:
+The tests verify the pure logic without a browser:
 
-- `tests/collide.test.ts` — `resolveCircleRect` üstten iniş (`ny === -1`,
-  `depth ≈ 8`, makaledeki test birebir), yandan temas, merkez-içi kaçış,
-  uzak null; `restsOn` kenar toleransı.
-- `tests/logic.test.ts` — `shouldJump` üç durum (makaledeki test birebir) +
-  tüketilmiş sayaç; `cutJump` (yükselirken keser, düşerken dokunmaz);
-  `followCamera` (hedefe yaklaşır, aşmaz, `dt`'den bağımsız); `buoyancy`
-  (yüzey üstünde `vy` değişmez, altında yukarı iter, derinlikle güçlenir).
+- `tests/collide.test.ts` — `resolveCircleRect` landing from above (`ny === -1`,
+  `depth ≈ 8`, exactly the test in the article), side contact, escaping from inside
+  the center, null when far; `restsOn` edge tolerance.
+- `tests/logic.test.ts` — `shouldJump` three cases (exactly the test in the article)
+  + consumed counter; `cutJump` (cuts while rising, does not touch while falling);
+  `followCamera` (approaches the target, does not overshoot, independent of `dt`);
+  `buoyancy` (`vy` unchanged above the surface, pushes up below it, gets stronger
+  with depth).
 
-## Dosya yapısı
+## File layout
 
 ```
 index.html
 src/
   engine/
-    vec.ts       # fizik yazısından aynen kopya
-    body.ts      # Body'ye grounded? + RectBody eklendi
-    collide.ts   # YENİ: Rect, Hit, resolveCircleRect, restsOn
-    world.ts     # step platformcuya göre yeniden yazıldı (taşıma + entegrasyon + çarpışma)
-  logic.ts       # followCamera, shouldJump, cutJump, buoyancy (saf)
-  main.ts        # kamera, parallax, girdi, durum, çizim, tam ekran canvas
+    vec.ts       # copied verbatim from the physics article
+    body.ts      # grounded? + RectBody added to Body
+    collide.ts   # NEW: Rect, Hit, resolveCircleRect, restsOn
+    world.ts     # step rewritten for the platformer (carrying + integration + collision)
+  logic.ts       # followCamera, shouldJump, cutJump, buoyancy (pure)
+  main.ts        # camera, parallax, input, state, drawing, fullscreen canvas
 tests/
   collide.test.ts
   logic.test.ts
 ```
 
-## Alınan dersler (makalede de anlatılır)
+## Lessons learned (also told in the article)
 
-- Side-scroller'da kamera diye bir nesne yoktur: ekran sabittir, siz dünyayı ters
-  yönde kaydırırsınız (`ctx.translate(-cam.x, 0)`). Framework'ün `follow()`'u bu
-  tek satırı saklar.
-- Yumuşatma `dt`'den bağımsız olmalı: `1 - Math.pow(0.001, dt)` her karede aynı
-  hisseder. Aynı `Math.pow(sabit, dt)` deseni yüzdürme sönümünde de kullanılır.
-- Parallax yalanın katmanlarıdır: uzak %20, orta %50, oyun düzlemi %100 kayar.
-- Daire-dikdörtgen çözümleme, falling game'deki boolean testin devamı: en yakın
-  nokta + normal + derinlik. Önce geometri, sonra hız — hep aynı altın kural.
-- İyi zıplama fizik değil, kibar yalanlardır: coyote (~0.1s), buffer (~0.12s),
-  değişken zıplama.
-- Hareketli platform kandırmaz, taşır: önce üstünde kim var diye bak, sonra ikisini
-  birlikte kaydır.
-- Kaybetmek de kazanmak da `location.reload()` değil, bir durum + `resetGame()`.
-- Bu oyunun ilk sürümünde bir yerleşim hatası vardı: büyük "sofra" platformu kase
-  bölgesiyle çakışıyordu ve zeytin yağa batmak yerine masaya oturuyordu. Hatayı
-  gözle değil, motoru başsız (headless) süren 5 senaryoluk bir simülasyon testi
-  yakaladı (dala düşüş, tepsiyle taşınma, zıplama, yüzeyde dengelenme, boşluğa
-  düşüş). Ders: kazanma koşulunuz test edilmemişse, oyununuz kazanılamaz olabilir.
+- In a side-scroller there is no such thing as a camera object: the screen is fixed,
+  you scroll the world in the opposite direction (`ctx.translate(-cam.x, 0)`). The
+  framework's `follow()` hides this one line.
+- Smoothing must be independent of `dt`: `1 - Math.pow(0.001, dt)` feels the same on
+  every frame. The same `Math.pow(constant, dt)` pattern is also used in buoyancy damping.
+- Parallax is the layers of the lie: far scrolls 20%, middle 50%, the gameplay plane 100%.
+- Circle-rectangle resolution is the continuation of the boolean test in the falling
+  game: closest point + normal + depth. Geometry first, velocity second — always the
+  same golden rule.
+- Good jumping is not physics, it is polite lies: coyote (~0.1s), buffer (~0.12s),
+  variable jump.
+- A moving platform does not trick, it carries: first check who is on top of it, then
+  move both together.
+- Losing and winning are not `location.reload()`, they are a state + `resetGame()`.
+- The first version of this game had a layout bug: the large "table" platform
+  overlapped the bowl region and the olive sat on the table instead of sinking into
+  the oil. The bug was caught not by eye but by a 5-scenario simulation test driving
+  the engine headless (falling off the branch, being carried by the tray, jumping,
+  settling on the surface, falling into the gap). The lesson: if your win condition
+  is untested, your game may be unwinnable.
 
-## Lisans
+## License
 
 MIT

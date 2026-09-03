@@ -8,8 +8,8 @@ import {
   shouldJump,
 } from "../src/logic";
 
-describe("shouldJump — coyote + buffer, iki yalan tek koşul", () => {
-  it("coyote ve tampon: kenardan yeni ayrılmışken zıplayabilir", () => {
+describe("shouldJump — coyote + buffer mechanics", () => {
+  it("coyote and buffer: can jump shortly after leaving edge", () => {
     expect(shouldJump({ timeSinceGround: 0.08, timeSincePress: 0.05 })).toBe(
       true,
     );
@@ -21,7 +21,7 @@ describe("shouldJump — coyote + buffer, iki yalan tek koşul", () => {
     );
   });
 
-  it("tüketilmiş sayaçlar (COYOTE+1 / BUFFER+1) zıplatmaz", () => {
+  it("does not jump when timer expired (COYOTE+1 / BUFFER+1)", () => {
     expect(shouldJump({ timeSinceGround: COYOTE + 1, timeSincePress: 0 })).toBe(
       false,
     );
@@ -31,35 +31,35 @@ describe("shouldJump — coyote + buffer, iki yalan tek koşul", () => {
   });
 });
 
-describe("cutJump — değişken zıplama yüksekliği", () => {
-  it("yükselirken (vy < 0) hızı yarıdan biraz azına keser", () => {
+describe("cutJump — variable jump height", () => {
+  it("cuts upward velocity (vy < 0) to less than half", () => {
     expect(cutJump(-100)).toBeCloseTo(-45); // -100 * 0.45
   });
 
-  it("düşerken (vy > 0) hıza dokunmaz", () => {
+  it("does not touch falling velocity (vy > 0)", () => {
     expect(cutJump(80)).toBe(80);
   });
 
-  it("hız sıfırsa değişmez", () => {
+  it("does not change if velocity is zero", () => {
     expect(cutJump(0)).toBe(0);
   });
 });
 
-describe("followCamera — bir sayıyı hedefe yaklaştırmak", () => {
+describe("followCamera — smooth camera tracking", () => {
   const viewW = 800;
   const targetX = 1000;
   const facing = 1;
   const lookahead = facing * viewW * 0.18;
   const desired = targetX - viewW * 0.5 + lookahead;
 
-  it("hedefe yaklaşır ama tek karede aşmaz", () => {
+  it("approaches target without overshooting in a single frame", () => {
     const next = followCamera(0, targetX, facing, viewW, 0.1);
     expect(next).toBeGreaterThan(0);
-    expect(next).toBeLessThan(desired); // asla aşmaz
+    expect(next).toBeLessThan(desired); // never overshoots
   });
 
-  it("dt'den bağımsız: bir büyük adım ≈ çok küçük adım", () => {
-    // 1 saniyeyi tek dt=0.1'lik 10 adımda vs dt=0.01'lik 100 adımda geç
+  it("dt-independent: one large step ≈ many small steps", () => {
+    // Step through 1 second: 10 steps of dt=0.1 vs 100 steps of dt=0.01
     let a = 0;
     for (let i = 0; i < 10; i++)
       a = followCamera(a, targetX, facing, viewW, 0.1);
@@ -69,27 +69,27 @@ describe("followCamera — bir sayıyı hedefe yaklaştırmak", () => {
     expect(a).toBeCloseTo(b, 6);
   });
 
-  it("zaten hedefteyse yerinde kalır", () => {
+  it("remains in place if already at target", () => {
     const next = followCamera(desired, targetX, facing, viewW, 0.1);
     expect(next).toBeCloseTo(desired);
   });
 });
 
-describe("buoyancy — yüzeyin altında yukarı iten yay", () => {
-  it("yüzeyin üstünde hıza dokunmaz", () => {
-    // cy < surface → depth negatif
+describe("buoyancy — upward spring force beneath liquid surface", () => {
+  it("does not affect velocity above surface", () => {
+    // cy < surface -> depth negative
     expect(buoyancy(90, 50, 100, 0.1)).toBe(50);
   });
 
-  it("yüzeyin altında yukarı iter (sonuç negatif = yukarı)", () => {
-    // cy = 140, surface = 100 → depth = 40
+  it("pushes upward beneath surface (negative result = upward)", () => {
+    // cy = 140, surface = 100 -> depth = 40
     const vy = buoyancy(140, 0, 100, 0.1);
     expect(vy).toBeLessThan(0);
   });
 
-  it("ne kadar batarsa o kadar sert iter", () => {
+  it("pushes harder the deeper it is submerged", () => {
     const shallow = buoyancy(110, 0, 100, 0.1); // depth 10
     const deep = buoyancy(160, 0, 100, 0.1); // depth 60
-    expect(deep).toBeLessThan(shallow); // daha derin → daha güçlü yukarı itiş
+    expect(deep).toBeLessThan(shallow); // deeper -> stronger upward push
   });
 });
